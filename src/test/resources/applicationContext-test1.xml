@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	     xmlns:aop="http://www.springframework.org/schema/aop"
+	     xmlns:tx="http://www.springframework.org/schema/tx"
+	     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.0.xsd
+           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd">
+
+
+     <bean id="propertyConfigurerGolbal"
+          class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+          <property name="locations">
+               <list><value>classpath:AppConf.properties</value>
+                    <value>classpath:/GlobalConf.properties</value></list>
+          </property>
+          <property name="ignoreResourceNotFound" value="true"></property>
+     </bean>
+
+
+
+
+
+	<bean id="dataSource"
+		class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName"
+			value="${jdbc.driver}">
+		</property>
+		<property name="url"
+			value="${jdbc.url}">
+		</property>
+		<property name="username" value="${jdbc.user}"></property>
+		<property name="password" value="${jdbc.pwd}"></property>
+	</bean>
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+	
+	<!--  another ransactionManager for test  only -->
+	<bean id="transactionManagerLog" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+
+	<bean id="baseTransactionProxy" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean"
+		  abstract="true">
+		<property name="transactionManager" ref="transactionManager"/>
+		<property name="transactionAttributes">
+			<props>
+				<prop key="*">PROPAGATION_REQUIRED</prop>
+			</props>
+		</property>
+	</bean>
+	
+	<bean id="featureDao" parent="baseTransactionProxy">
+		<property name="target">
+			<bean class="example.FeatureDaoImpl">
+			</bean>
+		</property>
+	</bean>
+
+
+</beans>
